@@ -1,0 +1,61 @@
+<html>
+  <head>
+    <title>SET</title>
+  </head>
+  <header>
+    <div class="info-bar">
+      <h1>SET</h1>
+      <button class="description-show">?</button>
+      <p class="description">Find a set of three cards where each of the four properties (color, shape, count, and shading) are either all the same or all different across the three cards.</p>
+    </div>
+    <div class="score-board">
+      <span class="sets-remaining"></span>
+      <ol id="selectedCards" class="card-list active-selection"></ol>
+      <button class="primary-action check-selection" disabled>Check Me</button>
+      <p class="result-message hidden"></p>
+    </div>
+  </header>
+  <div class="game-wrapper">
+    <ol id="gameBoard" class="card-list">
+    </ol>
+  </div>
+  <footer>
+    <a href="http://www.setgame.com/set">More about SET</a>
+    <button class="new-game">New Game</button>
+  </footer>
+
+  <div class="hidden results-template">
+    <h3>Your Results</h3>
+    <ol class="card-list">
+      {{:each selectedCards do}}
+        <li class="{{getClass()}}"></li>
+      {{end}}
+    </ol>
+    <ul class="results-properties">
+    {{:each properties do}}
+      {{. | :log}}
+      {{:if match | :equals( "all" ) do}}
+        <li class="good">All {{name | :titleize :pluralize( @setLimit, true )}} are the Same</li>
+      {{end}}
+      {{:if match | :equals( "none" ) do}}
+        <li class="good">All {{name | :titleize :pluralize( @setLimit, true )}} are Different</li>
+      {{end}}
+      {{:if match | :equals( "partial" ) do}}
+        <li class="bad">Some, but not All {{name | :titleize :pluralize( @setLimit )}} are the Same or Different</li>
+      {{end}}
+    {{end}}
+    </ul>
+      {{:if victory do}}
+        <h2 class="victory win">You found a set!</h2>
+      {{end}}
+      {{:unless victory do}}
+        <h2 class="victory loss">Nope, not a set.</h2>
+      {{end}}
+      <footer class="">
+        <button id="results-ok" class="">OK</button>
+      </footer>
+  </div>
+  <script src="https://rawgithub.com/hershmire/walrus/master/bin/walrus.min.js"></script>
+  <script src="https://rawgithub.com/jeremyruppel/walrus/master/bin/walrus.strings.js"></script>
+  <script src="https://rawgithub.com/jeremyruppel/walrus/master/bin/walrus.inflections.js"></script>
+</html>

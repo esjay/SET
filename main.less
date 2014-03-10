@@ -1,0 +1,373 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  background: #eee;
+  max-width: 30em;
+  position: relative;
+  margin: auto;
+}
+header {
+  background: #333;
+  color: #fff;
+  .info-bar {
+    background: #333;
+    color: #eee;
+    .clearfix();
+    
+    & > * {
+      display: inline-block;
+      margin: 0 .5em;
+      float: left;
+    }
+    & > button {
+      float: right;
+    }
+    .description {
+      position: relative;
+      background: #444;
+      box-shadow: inset 0 0 .7em #111;
+      display: none;
+      padding: .75em;
+    }
+  }
+}
+
+.score-board {
+  .active-selection {
+    float: left;
+    .placeholder {
+      color: transparent;
+      text-shadow: 0 0 .1em #999;
+      font-size: 2em;
+      font-weight: 600;
+      line-height: .4;
+      max-width: 3em;
+      max-height: 1.7em;
+    }
+  }
+  .result-message {
+    color: #000;
+    position: fixed;
+    z-index: 10;
+    h3 {
+      width: 100%;
+    }
+  }
+}
+
+button {
+  padding: .5em .75em;
+  border-radius: .2em;
+  border: none;
+  box-shadow: .1em .1em 0 .1em #666;
+  user-select: none;
+}
+  @keyframes buzz {
+    0%, 100% { box-shadow: 0 0 .4em @selectedColor; }
+    50% { box-shadow: 0 0 0 @selectedColor; }
+  }
+.card-list {
+  list-style-type: none;
+  width: 100%;
+  position: relative;
+  padding: 0;
+  margin: auto;
+  .clearfix();
+  
+  @media all and (min-width: 320px) and (max-width: 780px) {
+    width: 100%;
+  }
+  
+  &.activated li {
+    cursor: pointer;
+      
+    &:not(.selected):hover { 
+      animation: 1s buzz infinite;
+    }
+
+  }
+  
+  li {
+    background: #fff;
+    border: .05em solid #aaa;
+    width: 8em;
+    max-width: 30%;
+    height: 4em;
+    position: relative;
+    padding: .5em 0;
+    border-radius: .3em;
+    margin: .3em .3em;
+    float: left;
+    user-select: none;
+    overflow: hidden;
+    border: .1em solid #aaa;
+    
+    &.placeholder {
+      border: .1em dashed #aaa!important;
+      
+      &:before {
+        top: 100%;
+      }
+    }
+    
+    &:before {
+      box-sizing: content-box;
+      position: relative;
+      display: block;
+      height: 2.5em;
+      border-color: #fff;
+      border-style: solid;
+      box-shadow: 0 0 0 3.5em #fff;
+      padding: 0;
+      background-image: @sprite;
+      background-size: 2em auto;
+    } 
+    &:not(.placeholder):before {
+      margin: 0 auto;
+      content: '';
+    }
+    &.one:before {
+      width: 1.9em; 
+    }
+    &.two:before {
+      width: 2 * 1.9em; 
+    }
+    &.three:before {
+      width: 5.7em; 
+    }
+    
+  }
+}
+.diamond:before {
+	background-position: 0 0;
+  background-repeat: ;
+}
+.oval:before {
+  background-position: 0 -40px;
+  background-repeat: repeat-x;
+}
+.squiggle:before {
+  background-position: 0 -81px;
+  background-repeat: repeat-x;
+}
+
+
+.selected {
+/*  background: desaturate(lighten(@selectedColor, 65%), 40%)!important;
+*/  box-shadow: 0 0 .3em .2em saturate(@selectedColor, 60%)!important;
+}
+.matched {
+  box-shadow: 0 0 .15em aquamarine;
+}
+.primary-action {
+  float: right;
+  &:not(:disabled) {
+    background: limegreen;
+    animation: 1s buzz infinite;
+  }
+}
+/* Shape and count */
+.diamond {
+//  background-position: 0 0;
+/*  &.one:after {
+    content: '♦';
+  }
+  &.two:after {
+    content: '♦ ♦';
+  }
+  &.three:after {
+    content: '♦ ♦ ♦';
+  }*/
+}
+/*.squiggle {
+  position: relative;
+  &:after {
+    content: '';
+    display: inline-block;
+    width: .4em;
+    height: 1em;
+    border-radius: .5em;
+    border: .1em solid transparent; 
+  }
+}*/
+.squiggle {
+/*  font-weight: 600;
+  &.one:after {
+    content: 'S';
+  }
+  &.two:after {
+    content: 'S S'
+  }
+  &.three:after {
+    content: 'S S S';
+  }*/
+}
+.oval {
+/*  position: relative;
+  &:after {
+    content: '';
+    display: inline-block;
+    width: .4em;
+    height: 1em;
+    border-radius: .5em;
+    border: .1em solid transparent;
+  }*/
+}
+/* Fill */
+.solid {
+  &.red    { background-color: @red; }
+  &.purple { background-color: @purple; }
+  &.green  { background-color: @green; }
+}
+.stroke {
+  color: #fff;
+  &.red {
+    .create_fill(#fff, @red);
+  }
+  &.purple {
+    .create_fill(#fff, @purple);
+  }
+  &.green {
+    .create_fill(#fff, @green);
+  }
+}
+.striped {
+  color: #ccc;
+  &.red { .create_stripes(@red); }
+  &.purple { .create_stripes(@purple); }
+  &.green { .create_stripes(@green); }
+}
+
+@red: darken(#FF0000, 10%);
+@purple: darken(#FF00FF,10%);
+@green : darken(#00FF00, 20%);
+@selectedColor: darkblue;
+
+.create_stripes(@color) {
+  background-color: @color;
+  background-image: linear-gradient(rgba(255, 255, 255, 1) 50%, transparent 50%, transparent);
+  background-size: 0.6em;
+}
+
+.create_fill(@color, @border: @color) {
+  background-color: @border;
+  &.diamond:before {
+    background-position: 0 -121px;
+  }
+  &.oval:before {
+    background-position: 0 -162px;
+  }
+  &.squiggle:before {
+    background-position: 0 -203px;
+  }
+};
+.create_border(@color, @width: 1px) {
+  background-color: @color;
+/*    text-stroke: 1px @color;
+    text-fill-color: #fff;
+    text-shadow: 
+      -@width 0 0 @color, 
+      @width 0 0 @color, 
+      0 -@width 0 @color, 
+      0 @width 0 @color, 
+
+      -@width -@width 0 @color, 
+      -@width @width 0 @color, 
+      @width @width 0 @color, 
+      @width -@width 0 @color;
+  
+  &.oval:after {
+    border-color: @color;
+    background-color: transparent;
+  }*/
+};
+header, footer {
+  text-align: center;
+  button {
+    float: right;
+    background: desaturate(orange, 30%);
+  }
+}
+header {
+  margin-bottom: 1em;
+  .clearfix();
+}
+footer {
+  padding: 1em;
+}
+.description {
+  padding: 0 3em;
+  text-align: justify;
+}
+.result-message {
+  background: #fff;
+  transition: all .25s;
+  margin: auto;
+//  width: 100%;
+//  height: 40%;
+  box-shadow: 0 0 .1em .5em rgba(0,0,0,.6),
+  0 0 0 100em rgba(0,0,0,.2);
+  @media only screen and (max-width : 320px) {
+    width: 100%;
+  }
+}
+.results-properties {
+  text-align: left;
+  list-style-type: none;
+  
+  .good, .bad {
+    position: relative;
+    .clearfix();
+    &:before {
+      font-weight: 600;
+      font-size: 1.2em;
+      position: absolute;
+      padding: 0 .5em;
+      text-align: right;
+      right: 100%;
+    }
+  }
+  .good {
+    &:before {
+      content: '✓ ';
+      color: green;
+    }
+  }
+  .bad {
+    &:before {
+      content: '× ';
+      color: red;
+    }
+    
+  }
+}
+
+.victory {
+  color: #fff;
+  &.loss {
+    background: @red;
+  }
+  &.win {
+    background: @green;
+  }
+}
+:disabled {
+  color: #ddd;
+  background: #aaa;
+}
+.hidden {
+  display: none;
+}
+.clearfix() {
+  &:before,
+  &:after {
+    content: " ";
+    display: table;
+  }
+  &:after {
+    clear: both;
+  }
+  
+}
+@sprite: url("https://dl.dropboxusercontent.com/u/2128714/SET/shapesSpriteAll.png");
