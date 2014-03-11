@@ -1,5 +1,61 @@
-define(["jquery", "lodash", walrus], function($, _, Walrus) {
-  console.clear();
+define(["jquery", "lodash", "walrus", "walrus.inflections", "walrus.strings"], function($, _, Walrus) {
+  var template;
+  console.log(Walrus);
+  function updateSelectedCards() {
+    var selectedIndices = newGame.selected,
+        selectedCards = newGame.getSelected(),
+        showCheckButton = selectedIndices.length !== setLimit 
+          || !(selectedIndices.length === setLimit && !(newGame.isFoundSet(selectedIndices)));
+    
+    $(".check-selection").prop("disabled", showCheckButton);
+    
+    $("li", $activeSelection).each(function(i) {
+      if(_.has(selectedCards, i)) {
+        $(this)
+          .attr("class", selectedCards[i].getClass());
+      } else {
+        $(this).attr("class", "placeholder");
+      }
+    });
+    $("li", $list).each(function(i) {
+      $(this).toggleClass("selected", _.contains(selectedIndices, $(this).data("card")));
+    });
+
+  }
+
+  function closeResults() {
+    newGame.clearSelected();
+    updateSelectedCards();
+    $result.empty().fadeTo(250, 0).delay(250).hide();
+  }
+
+  function showResults() {
+    $result.html(newGame.checkSelection()).fadeTo(250, 1);  }
+
+  function cartesianProductOf() {
+    // From https://gist.github.com/ijy/6094414
+    return _.reduce(arguments, function(a, b) {
+        return _.flatten(_.map(a, function(x) {
+            return _.map(b, function(y) {
+                return x.concat([y]);
+            });
+        }), true);
+    }, [ [] ]);
+  }
+  function powerset(arr) {
+      var ps = [[]];
+      for (var i=0; i < arr.length; i++) {
+          for (var j = 0, len = ps.length; j < len; j++) {
+              ps.push(ps[j].concat(arr[i]));
+          }
+      }
+      return ps;
+  }
+  function allSets(arr) {
+    return _.reject(_.uniq(powerset(arr)), function(a) {return a.length !== setLimit });
+  }
+
+  // console.clear();
   var $list = $("#gameBoard"),
       $activeSelection = $("#selectedCards"),
       setLimit = 3,
@@ -25,6 +81,9 @@ define(["jquery", "lodash", walrus], function($, _, Walrus) {
         foundSets: [],
         validSets: [],
         selected: [],
+        clearSelected: function() {
+          return this.selected = [];
+        },
         getSelected: function() {
           return _.at(this.cards, this.selected);
         },
@@ -33,14 +92,20 @@ define(["jquery", "lodash", walrus], function($, _, Walrus) {
           return this.selected;
         },
         registerFoundSet: function(selectedCards) {
-          if(_.where(this.foundSets, selectedCards).length > 0) {
+          var sortedSelection = _.sortBy(selectedCards);
+
+          if(this.isFoundSet(sortedSelection)) {
             console.log("Old set");
           } else {
-            console.log("Found a new set");
-            this.foundSets.push(_.sortBy(selectedCards, function(num) {
-              return _.parseInt(num);
-            }));          
+            console.log("Found a new set", this.foundSets);
+            this.foundSets.push(sortedSelection);
           }
+        },
+        isFoundSet: function(cardArray) {
+          var sortedSelection = _.sortBy(cardArray);
+
+          return (_.where(this.foundSets, sortedSelection).length > 0);
+
         },
         getRemainingSets: function() {
 
@@ -96,8 +161,7 @@ define(["jquery", "lodash", walrus], function($, _, Walrus) {
           return viewData;
         },
         craftMarkup: function(viewData) {
-          var template = Walrus.Parser.parse( $(".results-template").html()),
-              htmlGoodness = template.compile(viewData);
+          var htmlGoodness = template.compile(viewData);
           
           return htmlGoodness;
         },
@@ -129,7 +193,7 @@ define(["jquery", "lodash", walrus], function($, _, Walrus) {
             this.cards = [];
           
             _(playingCards).each(function(combo) {
-              this.cards.push(_.create(
+              this.cards.push(_.extend({}, 
                 this.cardProto,
                 _.zipObject(propKeys, combo),
                 {propKeys: propKeys}
@@ -165,6 +229,7 @@ define(["jquery", "lodash", walrus], function($, _, Walrus) {
 
     return {
       init: function() {
+        template = Walrus.Parser.parse( $(".results-template").html());
         window.game = newGame;
         newGame.init();
         newGame.generateGame();
@@ -173,99 +238,49 @@ define(["jquery", "lodash", walrus], function($, _, Walrus) {
           $activeSelection.append($("<li>").addClass("placeholder").text("?"));
         });
 
+        this.bind();
+      },
+      bind: function() {
 
+        $(".new-game").click(function(event) {
+          event.preventDefault();
+          closeResults();
+          newGame.generateGame();
+          $(".check-selection").prop("disabled", true)
+        });
+
+        $(".check-selection").click(function(event) {
+          event.preventDefault();
+          
+          showResults();
+          $(".sets-remaining").text("Sets to Find: " + (game.validSets.length - game.foundSets.length));
+
+        });
+
+
+        $list.on("click", "li", function(event) {
+          var $card = $(this),
+              id = $card.data("card");
+          event.preventDefault();
+          
+          newGame.toggleSelect(id);
+
+          updateSelectedCards();
+          
+          // closeResults();
+        });
+
+        $("body").on("click", "#results-ok", function(event) {
+          event.preventDefault();
+          closeResults();
+        });
+
+        $(".description-show").on("click", function(event) {
+          event.preventDefault();
+          $(".description").toggle();
+        });
+        $(".description").hide();
       }
     };
-
-  $(".new-game").click(function(event) {
-    event.preventDefault();
-    closeResults();
-    newGame.generateGame();
-    $(".check-selection").prop("disabled", true)
-  });
-
-  $(".check-selection").click(function(event) {
-    event.preventDefault();
-    
-    showResults();
-    $(".sets-remaining").text("Sets to Find: " + (game.validSets.length - game.foundSets.length));
-
-  });
-
-
-  $list.on("click", "li", function(event) {
-    var $card = $(this),
-        id = $card.data("card");
-    event.preventDefault();
-    
-    newGame.toggleSelect(id);
-
-    updateSelectedCards();
-    
-    closeResults();
-  });
-
-  $("body").on("click", "#results-ok", function(event) {
-    event.preventDefault();
-    closeResults();
-  });
-
-  $(".description-show").on("click", function(event) {
-    event.preventDefault();
-    $(".description").toggle();
-  });
-  $(".description").hide();
-
-  function updateSelectedCards() {
-    var selectedIndices = newGame.selected,
-        selectedCards = newGame.getSelected();
-    
-    $("li", $list).each(function(i) {
-      $(this).toggleClass("selected", _.contains(selectedIndices, $(this).data("card")));
-    });
-    $(".check-selection").prop("disabled", selectedIndices.length !== setLimit);
-    
-    $("li", $activeSelection).each(function(i) {
-      if(_.has(selectedCards, i)) {
-        $(this)
-          .attr("class", selectedCards[i].getClass());
-      } else {
-        $(this).attr("class", "placeholder");
-      }
-    });
-
-  }
-
-  function closeResults() {
-    $result.empty().fadeTo(250, 0).delay(250).hide();
-  }
-
-  function showResults() {
-    $result.html(newGame.checkSelection()).fadeTo(250, 1);
-  //  newGame.selected = [];
-  //  updateSelectedCards();
-  }
-
-  function cartesianProductOf() {
-    // From https://gist.github.com/ijy/6094414
-    return _.reduce(arguments, function(a, b) {
-        return _.flatten(_.map(a, function(x) {
-            return _.map(b, function(y) {
-                return x.concat([y]);
-            });
-        }), true);
-    }, [ [] ]);
-  }
-  function powerset(arr) {
-      var ps = [[]];
-      for (var i=0; i < arr.length; i++) {
-          for (var j = 0, len = ps.length; j < len; j++) {
-              ps.push(ps[j].concat(arr[i]));
-          }
-      }
-      return ps;
-  }
-  function allSets(arr) {
-    return _.reject(_.uniq(powerset(arr)), function(a) {return a.length !== setLimit });
-  }
 });
+
